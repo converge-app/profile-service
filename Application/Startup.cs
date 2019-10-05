@@ -47,24 +47,24 @@ namespace Application
             services.AddTransient<IDatabaseContext, DatabaseContext>();
             services.AddMongoDb();
             services.AddAutoMapper(typeof(AutoMapperProfile));
-            
+
             services.AddHttpClient();
             services.AddTransient<IClient, Client>();
-            
+
             services.AddMultipleDomainSupport();
 
             var appSettings = Configuration.GetSection("AppSettings").Get<AppSettings>();
             services.AddTokenValidation(appSettings.Secret);
-            services.AddScoped<IProjectRepository, ProjectRepository>();
-            services.AddScoped<IProjectService, ProjectService>();
+            services.AddScoped<IBiddingRepository, BiddingRepository>();
+            services.AddScoped<IBiddingService, BiddingService>();
             services.AddTracing(options =>
             {
                 options.JaegerAgentHost = Environment.GetEnvironmentVariable("JAEGER_AGENT_HOST");
-                options.ServiceName = "projects-service";
+                options.ServiceName = "biddings-service";
                 options.LoggerFactory = _loggerFactory;
             });
 
-            services.AddApiDocumentation("Projects");
+            services.AddApiDocumentation("Biddings");
 
             services.AddHealthChecks();
         }
@@ -84,7 +84,7 @@ namespace Application
             app.UseRequestMiddleware();
 
             app.UseAuthentication();
-            app.UseApiDocumentation("Projects");
+            app.UseApiDocumentation("Biddings");
 
             app.UseMvc();
         }

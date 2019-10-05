@@ -68,10 +68,10 @@ namespace Application
 
             var appSettings = Configuration.GetSection("AppSettings").Get<AppSettings>();
             services.AddTokenValidation(appSettings.Secret);
-            services.AddScoped<IProjectRepository, ProjectRepository>();
-            services.AddScoped<IProjectService, ProjectService>();
+            services.AddScoped<IBiddingRepository, BiddingRepository>();
+            services.AddScoped<IBiddingService, BiddingService>();
 
-            services.AddApiDocumentation("Projects");
+            services.AddApiDocumentation("Biddings");
 
             services.AddHealthChecks();
         }
@@ -86,7 +86,7 @@ namespace Application
             app.UseRequestMiddleware();
 
             app.UseAuthentication();
-            app.UseApiDocumentation("Projects");
+            app.UseApiDocumentation("Biddings");
 
             app.UseMvc();
         }

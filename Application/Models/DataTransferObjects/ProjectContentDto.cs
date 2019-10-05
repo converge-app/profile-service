@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Models.DataTransferObjects
 {
-    public class ProjectContentDto
+    public class BiddingContentDto
     {
         
         [Required]

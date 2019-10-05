@@ -2,13 +2,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Application.Models.DataTransferObjects
 {
-    public class ProjectCreationDto
+    public class BiddingCreationDto
     {
                 [Required]
                 public string OwnerId { get; set; }
                 public string FreelancerId { get; set; }
         
                 [Required]
-                public ProjectContentDto ProjectContent { get; set; }
+                public BiddingContentDto BiddingContent { get; set; }
     }
 }

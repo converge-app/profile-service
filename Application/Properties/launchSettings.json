@@ -19,11 +19,12 @@
     },
     "Application": {
       "commandName": "Project",
-      "launchBrowser": true,
       "launchUrl": "api/health/ping",
       "environmentVariables": {
+        "HTTP_PORT": "8080",
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "USERS_SERVICE_HTTP": "users-service.api.converge-app.net"
+        "USERS_SERVICE_HTTP": "users-service.api.converge-app.net",
+        "PROJECTS_SERVICE_HTTP": "projects-service.api.converge-app.net"
       },
       "applicationUrl": "https://localhost:443;http://localhost:80"
     },

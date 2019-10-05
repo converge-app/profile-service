@@ -4,7 +4,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace Application.Models.Entities
 {
-    public class Project
+    public class Bidding
     {
 
         [BsonId]
@@ -16,6 +16,6 @@ namespace Application.Models.Entities
         public string FreelancerId { get; set; }
 
         [Required]
-        public ProjectContent ProjectContent { get; set; }
+        public BiddingContent BiddingContent { get; set; }
     }
 }
