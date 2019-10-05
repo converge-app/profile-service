@@ -68,8 +68,8 @@ namespace Application
 
             var appSettings = Configuration.GetSection("AppSettings").Get<AppSettings>();
             services.AddTokenValidation(appSettings.Secret);
-            services.AddScoped<IBiddingRepository, BiddingRepository>();
-            services.AddScoped<IBiddingService, BiddingService>();
+            services.AddScoped<IBidRepository, BidRepository>();
+            services.AddScoped<IBidService, BidService>();
 
             services.AddApiDocumentation("Biddings");
 

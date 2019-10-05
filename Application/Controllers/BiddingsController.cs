@@ -23,27 +23,27 @@ namespace Application.Controllers
     public class BiddingsController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly IBiddingRepository _biddingRepository;
-        private readonly IBiddingService _biddingService;
+        private readonly IBidRepository _bidRepository;
+        private readonly IBidService _bidService;
 
-        public BiddingsController(IBiddingService biddingService, IBiddingRepository biddingRepository, IMapper mapper)
+        public BiddingsController(IBidService bidService, IBidRepository bidRepository, IMapper mapper)
         {
-            _biddingService = biddingService;
-            _biddingRepository = biddingRepository;
+            _bidService = bidService;
+            _bidRepository = bidRepository;
             _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBidding([FromBody] BiddingCreationDto biddingDto)
+        public async Task<IActionResult> CreateBid([FromBody] BidCreationDto bidDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
 
-            var createBidding = _mapper.Map<Bidding>(biddingDto);
+            var createBid = _mapper.Map<Bid>(bidDto);
             try
             {
-                var createdBidding = await _biddingService.Create(createBidding);
-                return Ok(createdBidding);
+                var createdBid = await _bidService.Create(createBid);
+                return Ok(createdBid);
             }
             catch (UserNotFound)
             {
@@ -63,8 +63,8 @@ namespace Application.Controllers
         [AllowAnonymous]
         public IActionResult GetAll()
         {
-            var biddings = _biddingRepository.Get();
-            var biddingDtos = _mapper.Map<IList<BiddingDto>>(biddings);
+            var biddings = _bidRepository.Get();
+            var biddingDtos = _mapper.Map<IList<BidDto>>(biddings);
             return Ok(biddingDtos);
         }
 
@@ -72,38 +72,38 @@ namespace Application.Controllers
         [AllowAnonymous]
         public IActionResult GetByOwnerId(string id)
         {
-            var bidding = _biddingRepository.GetByOwnerId(id);
-            var biddingDto = _mapper.Map<BiddingDto>(bidding);
-            return Ok(biddingDto);
+            var bidding = _bidRepository.GetByOwnerId(id);
+            var bidDto = _mapper.Map<BidDto>(bidding);
+            return Ok(bidDto);
         }
 
         [HttpGet("freelancer/{id}")]
         [AllowAnonymous]
         public IActionResult GetByFreelancerId(string id)
         {
-            var bidding = _biddingRepository.GetByFreelancerId(id);
-            var biddingDto = _mapper.Map<BiddingDto>(bidding);
-            return Ok(biddingDto);
+            var bid = _bidRepository.GetByFreelancerId(id);
+            var bidDto = _mapper.Map<BidDto>(bid);
+            return Ok(bidDto);
         }
 
         [HttpGet("{id}")]
         [AllowAnonymous]
         public IActionResult GetById(string id)
         {
-            var bidding = _biddingRepository.GetById(id);
-            var biddingDto = _mapper.Map<BiddingDto>(bidding);
-            return Ok(biddingDto);
+            var bid = _bidRepository.GetById(id);
+            var bidDto = _mapper.Map<BidDto>(bid);
+            return Ok(bidDto);
         }
 
         [HttpPut("{id}")]
-        public IActionResult Update([FromRoute] string id, [FromBody] BiddingUpdateDto biddingDto)
+        public IActionResult Update([FromRoute] string id, [FromBody] BidUpdateDto bidDto)
         {
-            var bidding = _mapper.Map<Bidding>(biddingDto);
+            var bidding = _mapper.Map<Bid>(bidDto);
             bidding.Id = id;
 
             try
             {
-                _biddingService.Update(bidding);
+                _bidService.Update(bidding);
                 return Ok();
             }
             catch (Exception e)
@@ -117,7 +117,7 @@ namespace Application.Controllers
         {
             try
             {
-                _biddingRepository.Remove(id);
+                _bidRepository.Remove(id);
             }
             catch (Exception e)
             {
