@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Application.Exceptions;
 using Application.Helpers;
 using Application.Models.DataTransferObjects;
 using Application.Models.Entities;
@@ -34,15 +35,16 @@ namespace Application.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBid([FromBody] BidCreationDto bidDto)
+        public async Task<IActionResult> OpenBid([FromBody] BidCreationDto bidDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(new { message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
+                return BadRequest(new
+                    {message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)});
 
             var createBid = _mapper.Map<Bid>(bidDto);
             try
             {
-                var createdBid = await _bidService.Create(createBid);
+                var createdBid = await _bidService.Open(createBid);
                 return Ok(createdBid);
             }
             catch (UserNotFound)
@@ -59,52 +61,22 @@ namespace Application.Controllers
             }
         }
 
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult GetAll()
+        [HttpPut("{bidId}")]
+        public async Task<IActionResult> AcceptBid([FromHeader] string authorization, [FromRoute] string bidId, [FromBody] BidUpdateDto bidDto)
         {
-            var biddings = _bidRepository.Get();
-            var biddingDtos = _mapper.Map<IList<BidDto>>(biddings);
-            return Ok(biddingDtos);
-        }
+            if (bidId != bidDto.Id)
+                return BadRequest(new MessageObj("Invalid id(s)"));
 
-        [HttpGet("employer/{id}")]
-        [AllowAnonymous]
-        public IActionResult GetByOwnerId(string id)
-        {
-            var bidding = _bidRepository.GetByOwnerId(id);
-            var bidDto = _mapper.Map<BidDto>(bidding);
-            return Ok(bidDto);
-        }
+            if (!ModelState.IsValid)
+                return BadRequest(new
+                    {message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)});
 
-        [HttpGet("freelancer/{id}")]
-        [AllowAnonymous]
-        public IActionResult GetByFreelancerId(string id)
-        {
-            var bid = _bidRepository.GetByFreelancerId(id);
-            var bidDto = _mapper.Map<BidDto>(bid);
-            return Ok(bidDto);
-        }
-
-        [HttpGet("{id}")]
-        [AllowAnonymous]
-        public IActionResult GetById(string id)
-        {
-            var bid = _bidRepository.GetById(id);
-            var bidDto = _mapper.Map<BidDto>(bid);
-            return Ok(bidDto);
-        }
-
-        [HttpPut("{id}")]
-        public IActionResult Update([FromRoute] string id, [FromBody] BidUpdateDto bidDto)
-        {
-            var bidding = _mapper.Map<Bid>(bidDto);
-            bidding.Id = id;
-
+            var updateBid = _mapper.Map<Bid>(bidDto);
             try
             {
-                _bidService.Update(bidding);
-                return Ok();
+                if (await _bidService.Accept(updateBid, authorization.Split(' ')[1]))
+                    return Ok();
+                throw new InvalidBid();
             }
             catch (Exception e)
             {
@@ -112,12 +84,40 @@ namespace Application.Controllers
             }
         }
 
+        [HttpGet]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAll()
+        {
+            var bids = await _bidRepository.Get();
+            var bidDtos = _mapper.Map<IList<BidDto>>(bids);
+            return Ok(bidDtos);
+        }
+
+
+        [HttpGet("freelancer/{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByFreelancerId(string id)
+        {
+            var bids = await _bidRepository.GetByFreelancerId(id);
+            var bidsDto = _mapper.Map<BidDto>(bids);
+            return Ok(bidsDto);
+        }
+
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetById(string id)
+        {
+            var bid = await _bidRepository.GetById(id);
+            var bidDto = _mapper.Map<BidDto>(bid);
+            return Ok(bidDto);
+        }
+
         [HttpDelete("{id}")]
-        public IActionResult Delete(string id)
+        public async Task<IActionResult> Delete(string id)
         {
             try
             {
-                _bidRepository.Remove(id);
+                await _bidRepository.Remove(id);
             }
             catch (Exception e)
             {

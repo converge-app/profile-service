@@ -4,8 +4,13 @@ namespace Application.Models.DataTransferObjects
 {
     public class BidCreationDto
     {
-                [Required]
-                public string OwnerId { get; set; }
-                public string FreelancerId { get; set; }
+        [Required]
+        public string ProjectId { get; set; }
+        [Required]
+        public string FreelancerId { get; set; }
+
+        public string Message { get; set; }
+        [Required]
+        public decimal Amount { get; set; }
     }
 }

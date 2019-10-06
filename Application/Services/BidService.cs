@@ -1,20 +1,24 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using Application.Exceptions;
 using Application.Models.DataTransferObjects;
 using Application.Models.Entities;
 using Application.Repositories;
 using Application.Utility.ClientLibrary;
+using Application.Utility.ClientLibrary.Project;
 using Application.Utility.Exception;
 using Application.Utility.Models;
+using Newtonsoft.Json;
 
 namespace Application.Services
 {
     public interface IBidService
     {
-        Task<Bid> Create(Bid bid);
-        void Update(Bid bidParam);
+        Task<Bid> Open(Bid bid);
+        Task<bool> Accept(Bid bid, string authorizationToken);
     }
 
     public class BidService : IBidService
@@ -28,32 +32,34 @@ namespace Application.Services
             _client = client;
         }
 
-        public async Task<Bid> Create(Bid bid)
+        public async Task<Bid> Open(Bid bid)
         {
-            if (bid == null)
-                throw new InvalidBid();
-            // Find if owner exists
-            var user = await _client.GetUserAsync(bid.OwnerId);
-            if (user != null)
-            {
-                var createdBidding = _bidRepository.Create(bid);
-                if (createdBidding != null)
-                    return createdBidding;
-                throw new InvalidBid("Could not create bidding");
-            }
+            var project = await _client.GetProjectAsync(bid.ProjectId);
+            if (project == null) throw new InvalidBid();
 
-            throw new UserNotFound();
+            var createdBid = await _bidRepository.Create(bid);
+
+            return createdBid ?? throw new InvalidBid();
         }
 
-        public void Update(Bid bid)
+        public async Task<bool> Accept(Bid bid, string authorizationToken)
         {
-            if (bid == null)
-                throw new InvalidBid();
+            var project = await _client.GetProjectAsync(bid.ProjectId);
+            if (project == null) throw new InvalidBid("projectId invalid");
 
-            if (_bidRepository.GetById(bid.Id) != null);
-            {
-                _bidRepository.Update(bid.Id, bid);
-            }
+            project.FreelancerId = bid.FreelancerId;
+            var client = _client.HttpClientFactory.CreateClient("factory");
+
+
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authorizationToken);
+
+            var response =
+                await client.PutAsJsonAsync($"http://projects-service.api.converge-app.net/api/projects/{project.Id}",
+                    project);
+
+            return response.IsSuccessStatusCode;
+
+            return await _client.UpdateProjectAsync(authorizationToken, project);
         }
     }
 }

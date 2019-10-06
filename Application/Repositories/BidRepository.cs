@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Application.Database;
 using Application.Models.Entities;
 using MongoDB.Driver;
@@ -7,66 +8,74 @@ namespace Application.Repositories
 {
     public interface IBidRepository
     {
-        List<Bid> Get();
-        Bid GetById(string id);
-        Bid GetByOwnerId(string ownerId);
-        Bid GetByFreelancerId(string freelancerId);
-        Bid Create(Bid bid);
-        void Update(string id, Bid bidIn);
-        void Remove(Bid bidIn);
-        void Remove(string id);
+        Task<List<Bid>> Get();
+        Task<Bid> GetById(string id);
+        Task<List<Bid>> GetByProject(string projectId);
+        Task<List<Bid>> GetByFreelancerId(string freelancerId);
+        Task<List<Bid>> GetByProjectAndFreelancer(string projectId, string freelancerId);
+        Task<Bid> Create(Bid bid);
+        Task Update(string id, Bid bidIn);
+        Task Remove(Bid bidIn);
+        Task Remove(string id);
     }
 
     public class BidRepository : IBidRepository
     {
-        private readonly IDatabaseContext dbContext;
-        private readonly IMongoCollection<Bid> _biddings;
+        private readonly IMongoCollection<Bid> _bids;
 
         public BidRepository(IDatabaseContext dbContext)
         {
-            this.dbContext = dbContext;
-            if (dbContext.IsConnectionOpen()) _biddings = dbContext.Bids;
+            if (dbContext.IsConnectionOpen())
+                _bids = dbContext.Bids;
         }
 
-        public List<Bid> Get()
+        public async Task<List<Bid>> Get()
         {
-            return _biddings.Find(bidding => true).ToList();
+            return await (await _bids.FindAsync(bid => true)).ToListAsync();
         }
 
-        public Bid GetById(string id)
+        public async Task<Bid> GetById(string id)
         {
-            return _biddings.Find(bidding => bidding.Id == id).FirstOrDefault();
+            return await (await _bids.FindAsync(bidding => bidding.Id == id)).FirstOrDefaultAsync();
         }
 
-        public Bid GetByOwnerId(string ownerId)
+        public async Task<List<Bid>> GetByProject(string projectId)
         {
-            return _biddings.Find(bidding => bidding.OwnerId == ownerId).FirstOrDefault();
+            return await (await _bids.FindAsync(bid => bid.ProjectId == projectId)).ToListAsync();
         }
 
-        public Bid GetByFreelancerId(string freelancerId)
+        public async Task<List<Bid>> GetByFreelancerId(string freelancerId)
         {
-            return _biddings.Find(bidding => bidding.FreelancerId == freelancerId).FirstOrDefault();
+            return await (await _bids.FindAsync(bid => bid.FreelancerId == freelancerId)).ToListAsync();
         }
 
-        public Bid Create(Bid bid)
+        public async Task<List<Bid>> GetByProjectAndFreelancer(string projectId, string freelancerId)
         {
-            _biddings.InsertOne(bid);
+            return await (
+                await _bids.FindAsync(
+                    bid => bid.ProjectId == projectId && bid.FreelancerId == freelancerId)
+            ).ToListAsync();
+        }
+
+        public async Task<Bid> Create(Bid bid)
+        {
+            await _bids.InsertOneAsync(bid);
             return bid;
         }
 
-        public void Update(string id, Bid bidIn)
+        public async Task Update(string id, Bid bidIn)
         {
-            _biddings.ReplaceOne(bidding => bidding.Id == id, bidIn);
+            await _bids.ReplaceOneAsync(bidding => bidding.Id == id, bidIn);
         }
 
-        public void Remove(Bid bidIn)
+        public async Task Remove(Bid bidIn)
         {
-            _biddings.DeleteOne(bidding => bidding.Id == bidIn.Id);
+            await _bids.DeleteOneAsync(bidding => bidding.Id == bidIn.Id);
         }
 
-        public void Remove(string id)
+        public async Task Remove(string id)
         {
-            _biddings.DeleteOne(bidding => bidding.Id == id);
+            await _bids.DeleteOneAsync(bidding => bidding.Id == id);
         }
     }
 }
