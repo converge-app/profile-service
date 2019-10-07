@@ -48,16 +48,6 @@ namespace Application.Services
             if (project == null) throw new InvalidBid("projectId invalid");
 
             project.FreelancerId = bid.FreelancerId;
-            var client = _client.HttpClientFactory.CreateClient("factory");
-
-
-            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", authorizationToken);
-
-            var response =
-                await client.PutAsJsonAsync($"http://projects-service.api.converge-app.net/api/projects/{project.Id}",
-                    project);
-
-            return response.IsSuccessStatusCode;
 
             return await _client.UpdateProjectAsync(authorizationToken, project);
         }
