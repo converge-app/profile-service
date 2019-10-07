@@ -43,7 +43,7 @@ spec:
               value: "6831"
             - name: JAEGER_SAMPLER_TYPE
               value: "const"
-            - name: PROJECTS_SERVICE_HTTP
+            - name: PROJECTS_SERVICE_HTTPS
               value: projects-service-master
           ports:
             - containerPort: {{ .Values.web.port }}
