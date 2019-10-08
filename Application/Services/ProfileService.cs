@@ -1,16 +1,20 @@
+using System;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using Application.Exceptions;
 using Application.Models.Entities;
 using Application.Repositories;
 using Application.Utility.ClientLibrary;
 using Application.Utility.ClientLibrary.Project;
+using Application.Utility.Exception;
 
 namespace Application.Services
 {
     public interface IProfileService
     {
-        Task<Profile> Open(Profile profile);
-        Task<bool> Accept(Profile profile, string authorizationToken);
+        Task<Profile> CreateProfile(Profile createProfile);
+        Task<Profile> UpdateProfile(Profile updateProfile);
     }
 
     public class ProfileService : IProfileService
@@ -24,25 +28,45 @@ namespace Application.Services
             _client = client;
         }
 
-        public async Task<Profile> Open(Profile profile)
+        public async Task<Profile> CreateProfile(Profile createProfile)
         {
-            var project = await _client.GetProjectAsync(profile.ProjectId);
-            if (project == null)throw new InvalidProfile();
+            if (await _profileRepository.UserIdExists(createProfile.UserId))
+                throw new InvalidProfile("User already exists");
 
-            var createdProfile = await _profileRepository.Create(profile);
+            if (string.IsNullOrEmpty(createProfile.ProfilePictureUrl))
+            {
+                using (var md5 = MD5.Create())
+                {
+                    var result = md5.ComputeHash(Encoding.ASCII.GetBytes(createProfile.UserId));
+                    createProfile.ProfilePictureUrl =
+                        "https://www.gravatar.com/avatar/" + BitConverter.ToString(result).Replace("-", "" + "").ToLower() + "?s=256&d=identicon&r=PG";
+                }
+            }
 
-            return createdProfile ??
-                throw new InvalidProfile();
+            var profile = await _profileRepository.Create(createProfile);
+            
+            try
+            {
+                var user = await _client.GetUserAsync(createProfile.UserId);
+                if (user == null)
+                    throw new UserNotFound();
+            }
+            catch (UserNotFound)
+            {
+                await _profileRepository.Remove(profile.Id);
+                throw new InvalidProfile("User not found");
+            }
+
+            return profile;
         }
 
-        public async Task<bool> Accept(Profile profile, string authorizationToken)
+        public async Task<Profile> UpdateProfile(Profile updateProfile)
         {
-            var project = await _client.GetProjectAsync(profile.ProjectId);
-            if (project == null)throw new InvalidProfile("projectId invalid");
+            if (await _profileRepository.GetById(updateProfile.Id) == null)
+                throw new InvalidProfile("Profile doesn't exist, create one first'");
 
-            project.FreelancerId = profile.FreelancerId;
-
-            return await _client.UpdateProjectAsync(authorizationToken, project);
+            await _profileRepository.Update(updateProfile.Id, updateProfile);
+            return await _profileRepository.GetById(updateProfile.Id);
         }
     }
 }

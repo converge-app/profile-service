@@ -36,7 +36,7 @@ namespace Application.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> OpenProfile([FromBody] ProfileCreationDto profileDto)
+        public async Task<IActionResult> Create([FromBody] ProfileCreationDto profileDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(new { message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
@@ -44,8 +44,8 @@ namespace Application.Controllers
             var createProfile = _mapper.Map<Profile>(profileDto);
             try
             {
-                var createdProfile = await _profileService.Open(createProfile);
-                return Ok(createdProfile);
+                var profile = await _profileService.CreateProfile(createProfile);
+                return Ok(profile);
             }
             catch (UserNotFound)
             {
@@ -62,7 +62,7 @@ namespace Application.Controllers
         }
 
         [HttpPut("{profileId}")]
-        public async Task<IActionResult> AcceptProfile([FromHeader] string authorization, [FromRoute] string profileId, [FromBody] ProfileUpdateDto profileDto)
+        public async Task<IActionResult> Update([FromRoute] string profileId, [FromBody] ProfileUpdateDto profileDto)
         {
             if (profileId != profileDto.Id)
                 return BadRequest(new MessageObj("Invalid id(s)"));
@@ -73,9 +73,8 @@ namespace Application.Controllers
             var updateProfile = _mapper.Map<Profile>(profileDto);
             try
             {
-                if (await _profileService.Accept(updateProfile, authorization.Split(' ')[1]))
-                    return Ok();
-                throw new InvalidProfile();
+                Profile profile = await _profileService.UpdateProfile(updateProfile);
+                return Ok(profile);
             }
             catch (Exception e)
             {
@@ -90,15 +89,6 @@ namespace Application.Controllers
             var profiles = await _profileRepository.Get();
             var profileDtos = _mapper.Map<IList<ProfileDto>>(profiles);
             return Ok(profileDtos);
-        }
-
-        [HttpGet("freelancer/{id}")]
-        [AllowAnonymous]
-        public async Task<IActionResult> GetByFreelancerId(string id)
-        {
-            var profiles = await _profileRepository.GetByFreelancerId(id);
-            var profilesDto = _mapper.Map<ProfileDto>(profiles);
-            return Ok(profilesDto);
         }
 
         [HttpGet("{id}")]

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Application.Models.DataTransferObjects
@@ -6,15 +7,14 @@ namespace Application.Models.DataTransferObjects
     {
         [Required]
         public string Id { get; set; }
-
         [Required]
-        public string ProjectId { get; set; }
-
+        public string UserId { get; set; }
+        public string ProfilePictureUrl { get; set; }
         [Required]
-        public string FreelancerId { get; set; }
-        public string Message { get; set; }
-
-        [Required]
-        public decimal Amount { get; set; }
+        public string Title { get; set; }
+        public decimal Rating { get; set; }
+        public string Description { get; set; }
+        public List<string> Skills { get; set; } = new List<string>();
+        public List<string> Experience { get; set; } = new List<string>();
     }
 }

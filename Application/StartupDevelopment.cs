@@ -71,7 +71,7 @@ namespace Application
             services.AddScoped<IProfileRepository, ProfileRepository>();
             services.AddScoped<IProfileService, ProfileService>();
 
-            services.AddApiDocumentation("Profiless");
+            services.AddApiDocumentation("Profiles");
 
             services.AddHealthChecks();
         }
@@ -86,7 +86,7 @@ namespace Application
             app.UseRequestMiddleware();
 
             app.UseAuthentication();
-            app.UseApiDocumentation("Profiless");
+            app.UseApiDocumentation("Profiles");
 
             app.UseMvc();
         }

@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Application.Database;
 using Application.Models.Entities;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using Newtonsoft.Json;
 
 namespace Application.Repositories
 {
@@ -10,13 +14,11 @@ namespace Application.Repositories
     {
         Task<List<Profile>> Get();
         Task<Profile> GetById(string id);
-        Task<List<Profile>> GetByProject(string projectId);
-        Task<List<Profile>> GetByFreelancerId(string freelancerId);
-        Task<List<Profile>> GetByProjectAndFreelancer(string projectId, string freelancerId);
         Task<Profile> Create(Profile profile);
         Task Update(string id, Profile profileIn);
         Task Remove(Profile profileIn);
         Task Remove(string id);
+        Task<bool> UserIdExists(string userId);
     }
 
     public class ProfileRepository : IProfileRepository
@@ -39,22 +41,9 @@ namespace Application.Repositories
             return await (await _profiles.FindAsync(profiles => profiles.Id == id)).FirstOrDefaultAsync();
         }
 
-        public async Task<List<Profile>> GetByProject(string projectId)
+        public async Task<bool> UserIdExists(string userId)
         {
-            return await (await _profiles.FindAsync(profile => profile.ProjectId == projectId)).ToListAsync();
-        }
-
-        public async Task<List<Profile>> GetByFreelancerId(string freelancerId)
-        {
-            return await (await _profiles.FindAsync(profile => profile.FreelancerId == freelancerId)).ToListAsync();
-        }
-
-        public async Task<List<Profile>> GetByProjectAndFreelancer(string projectId, string freelancerId)
-        {
-            return await (
-                await _profiles.FindAsync(
-                    profile => profile.ProjectId == projectId && profile.FreelancerId == freelancerId)
-            ).ToListAsync();
+            return (await _profiles.Find(profile => profile.UserId == userId).FirstOrDefaultAsync()) != null;
         }
 
         public async Task<Profile> Create(Profile profile)
@@ -65,7 +54,24 @@ namespace Application.Repositories
 
         public async Task Update(string id, Profile profileIn)
         {
-            await _profiles.ReplaceOneAsync(profiles => profiles.Id == id, profileIn);
+            var profile = await GetById(id);
+
+            if (!string.IsNullOrEmpty(profileIn.Title))
+                profile.Title = profileIn.Title;
+            if (!string.IsNullOrEmpty(profileIn.Description))
+                profile.Description = profileIn.Description;
+            if (!string.IsNullOrEmpty(profileIn.UserId))
+                profile.UserId = profileIn.UserId;
+            if (!string.IsNullOrEmpty(profileIn.ProfilePictureUrl))
+                profile.ProfilePictureUrl = profileIn.ProfilePictureUrl;
+            if (profileIn.Experience.Count > 0)
+                profile.Experience = profileIn.Experience;
+            if (profileIn.Skills.Count > 0)
+                profile.Skills = profileIn.Skills;
+            if (profileIn.Rating != -1)
+                profile.Rating = profileIn.Rating;
+
+            await _profiles.ReplaceOneAsync(p => p.Id == id, profile);
         }
 
         public async Task Remove(Profile profileIn)

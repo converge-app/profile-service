@@ -64,7 +64,7 @@ namespace Application
                 options.LoggerFactory = _loggerFactory;
             });
 
-            services.AddApiDocumentation("Profiless");
+            services.AddApiDocumentation("Profiles");
 
             services.AddHealthChecks();
         }
@@ -84,7 +84,7 @@ namespace Application
             app.UseRequestMiddleware();
 
             app.UseAuthentication();
-            app.UseApiDocumentation("Profiless");
+            app.UseApiDocumentation("Profiles");
 
             app.UseMvc();
         }

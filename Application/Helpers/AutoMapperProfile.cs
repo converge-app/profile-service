@@ -1,9 +1,9 @@
 using Application.Models.DataTransferObjects;
-using Profile = AutoMapper.Profile;
+using Application.Models.Entities;
 
 namespace Application.Helpers
 {
-    public class AutoMapperProfile : Profile
+    public class AutoMapperProfile : AutoMapper.Profile
     {
         public AutoMapperProfile()
         {
