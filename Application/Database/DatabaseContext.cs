@@ -1,4 +1,3 @@
-using Application.Models;
 using Application.Models.Entities;
 using Application.Utility.Database;
 using MongoDB.Driver;
@@ -7,7 +6,7 @@ namespace Application.Database
 {
     public interface IDatabaseContext
     {
-        IMongoCollection<Bid> Bids { get; }
+        IMongoCollection<Profile> Profiles { get; }
 
         bool IsConnectionOpen();
     }
@@ -23,7 +22,7 @@ namespace Application.Database
             _database = client.GetDatabase(settings.DatabaseName);
         }
 
-        public IMongoCollection<Bid> Bids => _database.GetCollection<Bid>("Bids");
+        public IMongoCollection<Profile> Profiles => _database.GetCollection<Profile>("Profiles");
 
         public bool IsConnectionOpen()
         {

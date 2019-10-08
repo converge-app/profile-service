@@ -16,36 +16,36 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.VisualStudio.Web.CodeGeneration.Contracts.Messaging;
+using Profile = Application.Models.Entities.Profile;
 
 namespace Application.Controllers
 {
     [Route("api/[controller]")]
     [Authorize]
-    public class BiddingsController : ControllerBase
+    public class ProfilesController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly IBidRepository _bidRepository;
-        private readonly IBidService _bidService;
+        private readonly IProfileRepository _profileRepository;
+        private readonly IProfileService _profileService;
 
-        public BiddingsController(IBidService bidService, IBidRepository bidRepository, IMapper mapper)
+        public ProfilesController(IProfileService profileService, IProfileRepository profileRepository, IMapper mapper)
         {
-            _bidService = bidService;
-            _bidRepository = bidRepository;
+            _profileService = profileService;
+            _profileRepository = profileRepository;
             _mapper = mapper;
         }
 
         [HttpPost]
-        public async Task<IActionResult> OpenBid([FromBody] BidCreationDto bidDto)
+        public async Task<IActionResult> OpenProfile([FromBody] ProfileCreationDto profileDto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(new
-                    {message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)});
+                return BadRequest(new { message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
 
-            var createBid = _mapper.Map<Bid>(bidDto);
+            var createProfile = _mapper.Map<Profile>(profileDto);
             try
             {
-                var createdBid = await _bidService.Open(createBid);
-                return Ok(createdBid);
+                var createdProfile = await _profileService.Open(createProfile);
+                return Ok(createdProfile);
             }
             catch (UserNotFound)
             {
@@ -61,22 +61,21 @@ namespace Application.Controllers
             }
         }
 
-        [HttpPut("{bidId}")]
-        public async Task<IActionResult> AcceptBid([FromHeader] string authorization, [FromRoute] string bidId, [FromBody] BidUpdateDto bidDto)
+        [HttpPut("{profileId}")]
+        public async Task<IActionResult> AcceptProfile([FromHeader] string authorization, [FromRoute] string profileId, [FromBody] ProfileUpdateDto profileDto)
         {
-            if (bidId != bidDto.Id)
+            if (profileId != profileDto.Id)
                 return BadRequest(new MessageObj("Invalid id(s)"));
 
             if (!ModelState.IsValid)
-                return BadRequest(new
-                    {message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage)});
+                return BadRequest(new { message = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage) });
 
-            var updateBid = _mapper.Map<Bid>(bidDto);
+            var updateProfile = _mapper.Map<Profile>(profileDto);
             try
             {
-                if (await _bidService.Accept(updateBid, authorization.Split(' ')[1]))
+                if (await _profileService.Accept(updateProfile, authorization.Split(' ')[1]))
                     return Ok();
-                throw new InvalidBid();
+                throw new InvalidProfile();
             }
             catch (Exception e)
             {
@@ -88,28 +87,27 @@ namespace Application.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAll()
         {
-            var bids = await _bidRepository.Get();
-            var bidDtos = _mapper.Map<IList<BidDto>>(bids);
-            return Ok(bidDtos);
+            var profiles = await _profileRepository.Get();
+            var profileDtos = _mapper.Map<IList<ProfileDto>>(profiles);
+            return Ok(profileDtos);
         }
-
 
         [HttpGet("freelancer/{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetByFreelancerId(string id)
         {
-            var bids = await _bidRepository.GetByFreelancerId(id);
-            var bidsDto = _mapper.Map<BidDto>(bids);
-            return Ok(bidsDto);
+            var profiles = await _profileRepository.GetByFreelancerId(id);
+            var profilesDto = _mapper.Map<ProfileDto>(profiles);
+            return Ok(profilesDto);
         }
 
         [HttpGet("{id}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetById(string id)
         {
-            var bid = await _bidRepository.GetById(id);
-            var bidDto = _mapper.Map<BidDto>(bid);
-            return Ok(bidDto);
+            var profile = await _profileRepository.GetById(id);
+            var profileDto = _mapper.Map<ProfileDto>(profile);
+            return Ok(profileDto);
         }
 
         [HttpDelete("{id}")]
@@ -117,7 +115,7 @@ namespace Application.Controllers
         {
             try
             {
-                await _bidRepository.Remove(id);
+                await _profileRepository.Remove(id);
             }
             catch (Exception e)
             {

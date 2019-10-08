@@ -24,7 +24,7 @@ spec:
             - name: ELASTICSEARCH_URI
               value: jaeger-elasticsearch-client:9200
             - name: CollectionName
-              value: "Biddings"
+              value: "Profiless"
             - name: ConnectionString
               value: "mongodb://{{ .Values.web.mongodb.serviceName }}:{{ .Values.web.mongodb.port }}"
             - name: DatabaseName
@@ -43,8 +43,8 @@ spec:
               value: "6831"
             - name: JAEGER_SAMPLER_TYPE
               value: "const"
-            - name: PROJECTS_SERVICE_HTTP
-              value: projects-service-master
+            - name: USERS_SERVICE_HTTP
+              value: users-service-master
           ports:
             - containerPort: {{ .Values.web.port }}
           resources:

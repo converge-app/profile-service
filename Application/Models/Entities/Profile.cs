@@ -1,18 +1,17 @@
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
-namespace Application.Models.DataTransferObjects
+namespace Application.Models.Entities
 {
-    public class BidDto
+    public class Profile
     {
-        [Required]
+        [BsonId]
+        [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
-        [Required]
+
         public string ProjectId { get; set; }
-        [Required]
         public string FreelancerId { get; set; }
         public string Message { get; set; }
-        [Required]
         public decimal Amount { get; set; }
     }
 }

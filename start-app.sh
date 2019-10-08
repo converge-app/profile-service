@@ -1,3 +1,3 @@
 #!/bin/bash
 
-dotnet run --project /home/hermansen/git/converge/services/bidding-service/Application/Application.csproj
+dotnet run --project /home/hermansen/git/converge/source/services/profiles-service/Application/Application.csproj

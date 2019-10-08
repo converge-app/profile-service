@@ -1,6 +1,5 @@
 using Application.Models.DataTransferObjects;
-using Application.Models.Entities;
-using AutoMapper;
+using Profile = AutoMapper.Profile;
 
 namespace Application.Helpers
 {
@@ -8,10 +7,10 @@ namespace Application.Helpers
     {
         public AutoMapperProfile()
         {
-            CreateMap<Bid, BidDto>();
-            CreateMap<BidDto, Bid>();
-            CreateMap<BidUpdateDto, Bid>();
-            CreateMap<BidCreationDto, Bid>();
+            CreateMap<Profile, ProfileDto>();
+            CreateMap<ProfileDto, Profile>();
+            CreateMap<ProfileUpdateDto, Profile>();
+            CreateMap<ProfileCreationDto, Profile>();
         }
     }
 }
