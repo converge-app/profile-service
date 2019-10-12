@@ -116,6 +116,7 @@ namespace Application.Controllers
         }
 
         [HttpGet("user/{userId}")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetByUserId([FromRoute] string userId)
         {
             var profile = await _profileRepository.GetByUserId(userId);
