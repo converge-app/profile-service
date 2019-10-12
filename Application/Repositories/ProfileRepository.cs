@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Application.Database;
 using Application.Models.Entities;
+using Microsoft.AspNetCore.Mvc;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -19,6 +20,7 @@ namespace Application.Repositories
         Task Remove(Profile profileIn);
         Task Remove(string id);
         Task<bool> UserIdExists(string userId);
+        Task<Profile> GetByUserId(string userId);
     }
 
     public class ProfileRepository : IProfileRepository
@@ -45,6 +47,8 @@ namespace Application.Repositories
         {
             return (await _profiles.Find(profile => profile.UserId == userId).FirstOrDefaultAsync()) != null;
         }
+
+        public async Task<Profile> GetByUserId(string userId) => await (await _profiles.FindAsync(profile => profile.UserId == userId)).FirstOrDefaultAsync();
 
         public async Task<Profile> Create(Profile profile)
         {

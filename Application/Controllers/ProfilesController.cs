@@ -114,5 +114,14 @@ namespace Application.Controllers
 
             return Ok();
         }
+
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetByUserId([FromRoute] string userId)
+        {
+            var profile = await _profileRepository.GetByUserId(userId);
+            if (profile != null)
+                return Ok(profile);
+            return NotFound();
+        }
     }
 }
