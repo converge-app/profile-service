@@ -1,10 +1,15 @@
 ﻿
+using System;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web.Http;
 using Application.Exceptions;
 using Application.Models.Entities;
 using Application.Repositories;
 using Application.Services;
 using Application.Utility.ClientLibrary;
+using Application.Utility.Exception;
 using Moq;
 using Xunit;
 namespace ApplicationUnitTests
@@ -26,8 +31,11 @@ namespace ApplicationUnitTests
             Assert.ThrowsAsync<InvalidProfile>(() => profileService.CreateProfile(new Profile()));
         }
 
+
+
+
         /* [Fact]
-         public void CreateProfil_IsNullOrEmpty_ThrowsInvalidProfile()
+         public void CreateProfil_IsNullOrEmpty_CreateProfilePicture()
          {
              // Arrange
              var profileRepository = new Mock<IProfileRepository>();
@@ -50,7 +58,7 @@ namespace ApplicationUnitTests
             // Arrange
             var profileRepository = new Mock<IProfileRepository>();
             var client = new Mock<IClient>();
-            profileRepository.Setup(m => m.UserIdExists(It.IsAny<string>())).ReturnsAsync(false);
+            profileRepository.Setup(m => m.UserIdExists(It.IsAny<string>())).ReturnsAsync(true);
             profileRepository.Setup(m => m.Create(It.IsAny<Profile>())).ReturnsAsync(new Profile());
 
             var profileService = new ProfileService(profileRepository.Object, client.Object);
@@ -60,6 +68,38 @@ namespace ApplicationUnitTests
             // Assert
             Assert.NotNull(actual);
         }
+
+
+        [Fact]
+        public async void Create_GetUserAsync()
+        {
+            Environment.SetEnvironmentVariable("USERS_SERVICE_HTTP", "users-service.api.converge-app.net");
+            var expected = "";
+            var mockFactory = new Mock<IHttpClientFactory>();
+            var configuration = new HttpConfiguration();
+            var clientHandlerStub = new DelegatingHandlerStub((request, cancellationToken) =>
+            {
+                request.SetConfiguration(configuration);
+                var response = request.CreateResponse(HttpStatusCode.OK, expected);
+                return Task.FromResult(response);
+            });
+
+            var client = new HttpClient(clientHandlerStub);
+
+            mockFactory.Setup(_ => _.CreateClient(It.IsAny<string>())).Returns(client);
+
+            IHttpClientFactory factory = mockFactory.Object;
+            var controller = new Client(factory);
+
+            //Act
+            var result = await controller.GetUserAsync("123");
+
+            //Assert
+            Assert.NotNull(expected);
+
+        }
+
+
 
 
 
